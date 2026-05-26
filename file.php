@@ -1,210 +1,243 @@
 <?php
-require "includes/auth.php";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login_page.php");
+    exit;
+}
+
 require "db.php";
 
-$stmt = $conn->prepare("SELECT * FROM files ORDER BY data_upload DESC");
-$stmt->execute();
-$result = $stmt->get_result();
-
 $activePage = 'file';
+$userId = $_SESSION['user_id'];
 
-$username = $_SESSION['username'] ?? '';
+$stmt = $conn->prepare("SELECT * FROM files WHERE utente_id = ? ORDER BY data_upload DESC");
+$stmt->bind_param("i", $userId);
+$stmt->execute();
 
-$docs = 0;
-$images = 0;
-$reports = 0;
-$videos = 0;
-
-$stmt2 = $conn->prepare("SELECT tipo FROM files");
-$stmt2->execute();
-$res2 = $stmt2->get_result();
-
-while ($row = $res2->fetch_assoc()) {
-    $type = strtolower($row['tipo']);
-
-    if (in_array($type, ['pdf', 'doc', 'docx', 'txt'])) {
-        $docs++;
-    }
-    elseif (in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-        $images++;
-    }
-    elseif (in_array($type, ['xls', 'xlsx', 'csv'])) {
-        $reports++;
-    }
-    elseif (in_array($type, ['mp4', 'avi', 'mov'])) {
-        $videos++;
-    }
-}
+$result = $stmt->get_result();
+$fileCaricati = $result->num_rows;
 ?>
 
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
-<meta charset="UTF-8">
-<title>Gestione File</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invio Audio - Concorso AIDO</title>
 
-<link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css">
 
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 </head>
 
 <body>
 
-<?php require "includes/header.php"; ?>
+<?php
+if (file_exists("includes/header.php")) {
+    require "includes/header.php";
+}
+?>
 
-<div class="container">
+<div class="main-wrapper">
 
-<?php require "includes/sidebar.php"; ?>
+    <div class="sidebar-wrapper">
+        <?php
+        if (file_exists("includes/sidebar.php")) {
+            require "includes/sidebar.php";
+        }
+        ?>
+    </div>
 
-<main class="content">
+    <main class="content">
 
-<div class="page-header">
-    <h2>📁 Gestione File</h2>
-    <p>Gestisci documenti, immagini, video e report.</p>
-</div>
+        <div class="page-header">
+            <h2>🎵 Partecipazione e Invio Audio</h2>
 
-<!-- Bottone upload -->
-<!-- Upload file -->
-<div class="top-actions">
-
-    <form action="upload.php" method="POST" enctype="multipart/form-data">
-
-        <input type="file" name="file" required>
-
-        <button type="submit" class="btn primary">
-            <span class="material-symbols-outlined">upload</span>
-            Carica File
-        </button>
-
-    </form>
-
-</div>
-
-<!-- Categorie -->
-<div class="cards">
-
-    <div class="card file-category">
-        <div class="icon blue">
-            <span class="material-symbols-outlined">description</span>
+            <p>
+                Invia il tuo file audio ufficiale per completare
+                la partecipazione al concorso AIDO.
+            </p>
         </div>
 
-        <h3>Documenti</h3>
-        <p><?= $docs ?> file</p>
-    </div>
+        <div class="info-box-aido">
 
-    <div class="card file-category">
-        <div class="icon green">
-            <span class="material-symbols-outlined">image</span>
+            <h4>Regolamento Ufficiale:</h4>
+
+            <p>
+                Il file audio deve esprimere i valori legati
+                alla donazione degli organi.
+
+                Formato supportato:
+                <b>MP3</b>
+
+                (Dimensione Massima: 50MB).
+
+                È consentito
+                <b>un solo file</b>
+                per iscritto.
+            </p>
         </div>
 
-        <h3>Foto</h3>
-        <p><?= $images ?> file</p>
-    </div>
+        <?php if ($fileCaricati === 0): ?>
 
-    <div class="card file-category">
-        <div class="icon orange">
-            <span class="material-symbols-outlined">assessment</span>
+            <div class="upload-dropzone">
+
+                <form action="upload.php" method="POST" enctype="multipart/form-data">
+
+                    <span class="material-symbols-outlined icon-video">
+                        audio_file
+                    </span>
+
+                    <p>
+                        Seleziona il file audio del tuo progetto
+                    </p>
+
+                    <input
+                        type="file"
+                        name="file"
+                        accept=".mp3,audio/mpeg"
+                        required
+                    >
+
+                    <button type="submit" class="btn aido-primary">
+
+                        <span class="material-symbols-outlined">
+                            upload
+                        </span>
+
+                        Trasmetti Audio alla Giuria
+                    </button>
+
+                </form>
+            </div>
+
+        <?php else: ?>
+
+            <div class="card alert-success-aido">
+
+                <p>
+                    <span class="material-symbols-outlined icon-check">
+                        check_circle
+                    </span>
+
+                    Ottimo lavoro!
+                    Il tuo file audio è stato inviato correttamente.
+                </p>
+
+            </div>
+
+        <?php endif; ?>
+
+        <div class="card table-card">
+
+            <div class="table-header">
+                <h3>Stato della tua Candidatura</h3>
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="file-table">
+
+                    <thead>
+                        <tr>
+                            <th>Nome File</th>
+                            <th>Formato</th>
+                            <th>Data Upload</th>
+                            <th>Dimensione</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <?php if ($fileCaricati === 0): ?>
+
+                            <tr>
+                                <td colspan="5" class="table-empty-state">
+
+                                    Nessun file registrato.
+                                    Carica un MP3 tramite il box superiore.
+
+                                </td>
+                            </tr>
+
+                        <?php endif; ?>
+
+                        <?php while ($file = $result->fetch_assoc()): ?>
+
+                            <tr>
+
+                                <td>
+                                    <div class="file-name">
+
+                                        <span class="material-symbols-outlined">
+                                            audio_file
+                                        </span>
+
+                                        <?= htmlspecialchars($file['nome_file'] ?? '') ?>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="tag green-tag">
+                                        <?= strtoupper(htmlspecialchars($file['tipo'] ?? '')) ?>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <?= date("d/m/Y H:i", strtotime($file['data_upload'] ?? 'now')) ?>
+                                </td>
+
+                                <td>
+                                    <?= round(($file['dimensione'] ?? 0) / (1024 * 1024), 2) ?> MB
+                                </td>
+
+                                <td>
+
+                                    <a
+                                        href="delete.php?id=<?= $file['id'] ?>"
+                                        onclick="return confirm('Vuoi davvero eliminare il file audio caricato?')"
+                                        style="text-decoration: none;"
+                                    >
+
+                                        <button class="icon-btn">
+
+                                            <span class="material-symbols-outlined">
+                                                delete
+                                            </span>
+
+                                            Elimina
+                                        </button>
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                        <?php endwhile; ?>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </div>
 
-        <h3>Report</h3>
-        <p><?= $reports ?> file</p>
-    </div>
-
-    <div class="card file-category">
-        <div class="icon purple">
-            <span class="material-symbols-outlined">movie</span>
-        </div>
-
-        <h3>Video</h3>
-       <p><?= $videos ?> file</p>
-    </div>
+    </main>
 
 </div>
 
-<!-- Tabella -->
-<div class="card table-card">
-
-    <div class="table-header">
-        <h3>File Recenti</h3>
-    </div>
-
-    <div class="table-responsive">
-
-        <table class="file-table">
-
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Data</th>
-                    <th>Dimensione</th>
-                    <th>Azione</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                
-<?php while ($file = $result->fetch_assoc()): ?>
-
-<tr>
-    <td>
-        <div class="file-name">
-            <span class="material-symbols-outlined">
-                description
-            </span>
-
-            <?= htmlspecialchars($file['nome_file'] ?? '') ?>
-        </div>
-    </td>
-
-    <td>
-        <span class="tag">
-            <?= strtoupper(htmlspecialchars($file['tipo'] ?? '')) ?>
-        </span>
-    </td>
-
-    <td>
-        <?= date("d M Y", strtotime($file['data_upload'] ?? 'now')) ?>
-    </td>
-
-    <td>
-        <?= htmlspecialchars($file['dimensione'] ?? '') ?>
-    </td>
-
-    <td>
-        <a href="<?= htmlspecialchars($file['percorso'] ?? '#') ?>" download>
-            <button class="icon-btn">
-                <span class="material-symbols-outlined">download</span>
-            </button>
-        </a>
-
-          <!-- DELETE -->
-    <a href="delete.php?id=<?= $file['id'] ?>" onclick="return confirm('Sei sicuro di voler eliminare questo file?')">
-        <button class="icon-btn delete-btn">
-            <span class="material-symbols-outlined">delete</span>
-        </button>
-    </a>
-
-    </td>
-</tr>
-
-<?php endwhile; ?>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-</main>
-
-</div>
-
-<?php require "includes/footer.php"; ?>
+<?php
+if (file_exists("includes/footer.php")) {
+    require "includes/footer.php";
+}
+?>
 
 </body>
 </html>

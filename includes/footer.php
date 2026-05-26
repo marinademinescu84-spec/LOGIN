@@ -1,3 +1,3 @@
 <footer class="footer">
-  © <?php echo date('Y'); ?> MY APP
+  © <?php echo date('Y'); ?> AIDO APP
 </footer>

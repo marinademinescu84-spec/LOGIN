@@ -1,0 +1,6 @@
+{
+    "emmet.triggerExpansionOnTab": true,
+    "geminicodeassist.codeGenerationPaneViewEnabled": true,
+    "git-graph.openToTheRepoOfTheActiveTextEditorDocument": true,
+    "editor.acceptSuggestionOnEnter": "smart"
+}

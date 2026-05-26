@@ -19,7 +19,19 @@
        class="<?= ($activePage ?? '') === 'file' ? 'active' : '' ?>">
        📁 File
     </a>
+<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator'): ?>
 
+    <a href="mini-admin.php"
+       class="<?= ($activePage ?? '') === 'admin' ? 'active' : '' ?>">
+       🛡️ Gestione DB
+    </a>
+
+    <a href="admin-audio.php"
+       class="<?= ($activePage ?? '') === 'admin-audio' ? 'active' : '' ?>">
+       🎧 Audio Giuria
+    </a>
+
+<?php endif; ?>
     <a class="logout" href="logout.php">
         🚪 Logout
     </a>
