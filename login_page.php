@@ -42,7 +42,7 @@
 
             $.ajax({
                 // 🌟 CORREZIONE URL: Usiamo l'indirizzo assoluto completo per non sbagliare cartella
-                url: "http://localhost/login/login.php",
+                url: "http://192.168.1.137/login/login.php",
                 type: "POST",
                 data: {
                     email: email,
@@ -54,7 +54,7 @@
                     
                     if(res === "OK"){
                         // 🌟 CORREZIONE REDIRECT: Percorso assoluto alla dashboard
-                        window.location.href = "http://localhost/login/dashboard.php";
+                        window.location.href = "http://192.168.1.137/login/dashboard.php";
                     } else if(res === "NON_ATTIVO") {
                         alert("Il tuo account non è attivo. Controlla la posta per attivarlo!");
                     } else {

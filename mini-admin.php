@@ -77,10 +77,10 @@ $risultato = $conn->query("SELECT id, nome, cognome, email, role, is_active FROM
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Nome</th>
+                            <th>Nome / Cognome</th>
                             <th>Email</th>
                             <th>Ruolo</th>
-                            <th>Stato</th>
+                            <th>Stato Account</th>
                             <th>Azioni</th>
                         </tr>
                     </thead>

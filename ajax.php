@@ -43,7 +43,8 @@ $stmt->bind_param("sssssss", $nome, $cognome, $telefono, $email, $password, $rol
 if ($stmt->execute()) {
 
     // Modifica questo URL inserendo il percorso reale del tuo localhost se necessario (es. http://localhost/progetto/...)
-  $link = "http://localhost/login/attiva.php?token=" . $token;
+$base_url = "http://192.168.1.137/login/";
+$link = $base_url . "attiva.php?token=" . $token;
     $subject = "Attivazione account";
 
     $message = "
